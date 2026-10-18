@@ -1,0 +1,15 @@
+.DS_Store
+build/
+DerivedData/
+
+# 由 XcodeGen 生成，不入库
+*.xcodeproj
+*.xcworkspace
+Config/
+
+# 签名/打包产物
+*.ipa
+*.xcarchive
+*.mobileprovision
+*.p12
+*.p8
