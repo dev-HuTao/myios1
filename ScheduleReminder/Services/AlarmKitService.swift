@@ -6,20 +6,18 @@ import SwiftUI
 /// 相比本地通知：即使 App 被杀、锁屏、被 Focus 静音，系统级闹钟依然可靠触发。
 ///
 /// 前置要求：
-/// 1. 部署目标 iOS 26.0+（AlarmKit 自 iOS 26 起提供）
+/// 1. 部署目标 iOS 26.1+（`AlarmPresentation.Alert` 的免 stopButton 初始化器自 26.1 起提供）
 /// 2. Info.plist 提供 NSAlarmKitUsageDescription；分发时 App Target 需有 AlarmKit 能力
 ///
 /// 说明：AlarmKit 没有 `Alarm.Metadata` / `Alarm.Configuration`，
 /// 元数据要自定义类型遵循 `AlarmMetadata`，配置用 `AlarmManager.AlarmConfiguration`，
 /// 排程/取消分别是 `schedule(id:configuration:)` 与 `cancel(id:)`。
-@available(iOS 26.0, *)
 struct AlarmKitMetadata: AlarmMetadata {
     var subject: String
     var time: String
     var place: String
 }
 
-@available(iOS 26.0, *)
 struct AlarmKitService {
     static let shared = AlarmKitService()
     private init() {}
@@ -56,6 +54,7 @@ struct AlarmKitService {
         let occurrences = s.upcomingOccurrences(weeks: rollingWeeks)
         let subtitle = "\(s.timeText) 上课" + (s.location.map { " · \($0)" } ?? "")
 
+        // 停止按钮由系统提供（该初始化器在 iOS 26.1+ 可用，工程部署目标已提到 26.1）。
         let alert = AlarmPresentation.Alert(
             title: LocalizedStringResource(stringLiteral: "\(s.subject) · \(minutesBefore) 分钟后上课"),
             secondaryButton: nil,
@@ -94,7 +93,7 @@ struct AlarmKitService {
         let alarms = (try? AlarmManager.shared.alarms) ?? []
         for alarm in alarms {
             do {
-                try await AlarmManager.shared.cancel(id: alarm.id)
+                try AlarmManager.shared.cancel(id: alarm.id)
             } catch {
                 print("取消闹钟 \(alarm.id) 失败: \(error)")
             }
