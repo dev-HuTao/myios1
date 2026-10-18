@@ -3,7 +3,7 @@ name: ScheduleReminder
 options:
   bundleIdPrefix: com.example
   deploymentTarget:
-    iOS: "26.0"
+    iOS: "26.1"
   createIntermediateGroups: true
   xcodeVersion: "26.0"
 
@@ -21,7 +21,7 @@ targets:
   ScheduleReminder:
     type: application
     platform: iOS
-    deploymentTarget: "26.0"
+    deploymentTarget: "26.1"
     sources:
       - ScheduleReminder/App
       - ScheduleReminder/Models
@@ -57,7 +57,7 @@ targets:
   ScheduleReminderWidget:
     type: app-extension
     platform: iOS
-    deploymentTarget: "26.0"
+    deploymentTarget: "26.1"
     sources:
       - ScheduleReminderWidget
       - ScheduleReminder/Shared
