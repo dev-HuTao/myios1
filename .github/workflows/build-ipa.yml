@@ -1,0 +1,76 @@
+name: Build IPA
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: build-ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-unsigned:
+    name: Build unsigned IPA
+    runs-on: macos-26
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Select Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Show toolchain
+        run: |
+          xcodebuild -version
+          xcodebuild -showsdks | grep -i iphoneos || true
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate --spec project.yml
+
+      - name: Archive
+        run: |
+          xcodebuild archive \
+            -project ScheduleReminder.xcodeproj \
+            -scheme ScheduleReminder \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/ScheduleReminder.xcarchive \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS=""
+
+      - name: Package Payload into .ipa
+        run: |
+          set -euo pipefail
+          APP="build/ScheduleReminder.xcarchive/Products/Applications/ScheduleReminder.app"
+          test -d "$APP"
+          rm -rf build/Payload
+          mkdir -p build/Payload
+          cp -R "$APP" build/Payload/
+          cd build
+          zip -qry ScheduleReminder-unsigned.ipa Payload
+          unzip -l ScheduleReminder-unsigned.ipa | head -20
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ScheduleReminder-unsigned-ipa
+          path: build/ScheduleReminder-unsigned.ipa
+          retention-days: 14
+          if-no-files-found: error
