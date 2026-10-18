@@ -42,6 +42,8 @@ targets:
         CFBundleDisplayName: 课程迟到提醒
         CFBundleDevelopmentRegion: zh_CN
         NSSupportsLiveActivities: true
+        # AlarmKit 授权弹窗文案；缺失或为空字符串时无法排程闹钟
+        NSAlarmKitUsageDescription: 用于在上课前按你设定的提前分钟数响铃提醒，避免迟到。
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
